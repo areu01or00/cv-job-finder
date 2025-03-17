@@ -2,122 +2,129 @@ import streamlit as st
 import os
 import sys
 
-# Add the project root directory to Python path
+# Add the project root directory to Python path if not already there
 current_dir = os.path.dirname(os.path.abspath(__file__))
 project_root = os.path.dirname(current_dir)
 if project_root not in sys.path:
     sys.path.insert(0, project_root)
 
-# Now import the components
-from app.components import CVAnalyzerComponent, JobSearchComponent
-
-# Set page configuration
-st.set_page_config(
-    page_title="CV-Based Job Finder",
-    page_icon="📄",
-    layout="wide",
-    initial_sidebar_state="expanded"
+from app.components import (
+    CVAnalyzerComponent,
+    JobSearchComponent,
+    CVOptimizerComponent,
+    JobCompatibilityComponent
 )
 
 def main():
-    """Main application function."""
-    # Add custom CSS
+    # Set page configuration
+    st.set_page_config(
+        page_title="CV-Based Job Finder",
+        page_icon="📄",
+        layout="wide",
+        initial_sidebar_state="expanded"
+    )
+    
+    # Custom CSS
     st.markdown("""
     <style>
-    .main-header {
-        font-size: 2.5rem;
-        color: #1E88E5;
-        margin-bottom: 1rem;
+    .main .block-container {
+        padding-top: 2rem;
+        padding-bottom: 2rem;
     }
-    .sub-header {
-        font-size: 1.5rem;
-        color: #424242;
-        margin-bottom: 1rem;
+    .stTabs [data-baseweb="tab-list"] {
+        gap: 2px;
     }
-    .stButton>button {
-        background-color: #1E88E5;
-        color: white;
-        border-radius: 5px;
-        padding: 0.5rem 1rem;
-        font-size: 1rem;
-        font-weight: bold;
+    .stTabs [data-baseweb="tab"] {
+        height: 50px;
+        white-space: pre-wrap;
+        background-color: #f0f2f6;
+        border-radius: 4px 4px 0 0;
+        gap: 1px;
+        padding-top: 10px;
+        padding-bottom: 10px;
     }
-    .stButton>button:hover {
-        background-color: #1565C0;
+    .stTabs [aria-selected="true"] {
+        background-color: #e6f0ff;
     }
+    footer {visibility: hidden;}
     </style>
     """, unsafe_allow_html=True)
     
-    # Application header
-    st.markdown("<h1 class='main-header'>CV-Based Job Finder</h1>", unsafe_allow_html=True)
-    st.markdown(
-        "An agentic system that analyzes your CV, finds relevant job opportunities on LinkedIn, "
-        "and presents them in a user-friendly interface."
-    )
+    # Header
+    st.title("📄 CV-Based Job Finder")
+    st.markdown("""
+    Analyze your CV, find matching job opportunities, optimize your CV, and score job compatibility.
+    """)
     
     # Sidebar
     with st.sidebar:
-        st.markdown("<h2 class='sub-header'>About</h2>", unsafe_allow_html=True)
-        st.write(
-            "This application uses AI to analyze your CV and find relevant job opportunities "
-            "on LinkedIn based on your skills, experience, and qualifications."
-        )
+        st.header("About")
+        st.markdown("""
+        This application helps you:
+        - Analyze your CV to extract key information
+        - Search for job opportunities based on your skills
+        - Optimize your CV for specific job roles
+        - Score your CV's compatibility with job descriptions
+        """)
         
-        st.markdown("<h2 class='sub-header'>How it works</h2>", unsafe_allow_html=True)
-        st.write("1. Upload your CV (PDF format)")
-        st.write("2. The system analyzes your CV to extract key information")
-        st.write("3. Based on your profile, it generates job search queries")
-        st.write("4. It searches for relevant job listings on LinkedIn")
-        st.write("5. Results are presented in a filterable, user-friendly interface")
+        st.header("How it works")
+        st.markdown("""
+        1. Upload your CV in the **CV Analysis** tab
+        2. Search for jobs in the **Job Search** tab
+        3. Get CV optimization recommendations in the **CV Optimization** tab
+        4. Calculate job compatibility scores in the **Job Compatibility** tab
+        """)
         
-        st.markdown("<h2 class='sub-header'>Settings</h2>", unsafe_allow_html=True)
+        st.header("Settings")
         # Add any settings here if needed
-        
-    # Main content
+    
     # Initialize components
     cv_analyzer = CVAnalyzerComponent()
     job_search = JobSearchComponent()
+    cv_optimizer = CVOptimizerComponent()
+    job_compatibility = JobCompatibilityComponent()
     
     # Create tabs
-    tab1, tab2 = st.tabs(["CV Analysis", "Job Search"])
+    tab1, tab2, tab3, tab4 = st.tabs([
+        "📄 CV Analysis", 
+        "🔍 Job Search", 
+        "✨ CV Optimization", 
+        "🎯 Job Compatibility"
+    ])
     
+    # CV Analysis tab
     with tab1:
-        # Render CV analyzer component
-        analysis_complete, cv_analysis, cv_path = cv_analyzer.render()
-        
-        # Store analysis results in session state
-        if analysis_complete and cv_analysis:
-            st.session_state["cv_analysis_complete"] = True
-            st.session_state["cv_analysis"] = cv_analysis
-            st.session_state["cv_path"] = cv_path
-            
-            # Add a button to navigate to job search tab
-            if st.button("Proceed to Job Search"):
-                # This will be handled by JavaScript to switch tabs
-                st.markdown(
-                    """
-                    <script>
-                        var tabs = window.parent.document.querySelectorAll('button[data-baseweb="tab"]');
-                        tabs[1].click();
-                    </script>
-                    """,
-                    unsafe_allow_html=True
-                )
+        cv_analysis_results = cv_analyzer.render()
+        if cv_analysis_results:
+            # Store CV analysis results in session state
+            st.session_state.cv_analysis_results = cv_analysis_results
     
+    # Job Search tab
     with tab2:
-        # Get analysis results from session state
-        cv_analysis = st.session_state.get("cv_analysis", None)
-        
-        # Render job search component
-        job_search.render(cv_analysis)
+        cv_analysis = st.session_state.get('cv_analysis_results', None)
+        job_search_results = job_search.render(cv_analysis)
+        if job_search_results:
+            # Store job search results in session state
+            st.session_state.job_search_results = job_search_results
+    
+    # CV Optimization tab
+    with tab3:
+        cv_analysis = st.session_state.get('cv_analysis_results', None)
+        cv_optimizer.render(cv_analysis)
+    
+    # Job Compatibility tab
+    with tab4:
+        cv_analysis = st.session_state.get('cv_analysis_results', None)
+        job_search_results = st.session_state.get('job_search_results', None)
+        job_compatibility.render(cv_analysis, job_search_results)
     
     # Footer
     st.markdown("---")
-    st.markdown(
-        "Powered by OpenRouter AI | "
-        "Built with Streamlit | "
-        "© 2024 CV-Based Job Finder"
-    )
+    st.markdown("""
+    <div style="text-align: center; color: #888;">
+    CV-Based Job Finder | Created with ❤️ | 2023
+    </div>
+    """, unsafe_allow_html=True)
 
 if __name__ == "__main__":
     main()
