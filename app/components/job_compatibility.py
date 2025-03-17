@@ -49,8 +49,11 @@ class JobCompatibilityComponent:
             st.info("Please search for jobs first to calculate compatibility scores.")
             return
         
-        # Convert job search results to DataFrame for display
-        df = pd.DataFrame(job_search_results)
+        # Convert job search results to DataFrame for display if it's not already
+        if isinstance(job_search_results, pd.DataFrame):
+            df = job_search_results
+        else:
+            df = pd.DataFrame(job_search_results)
         
         # Select columns to display
         display_columns = ['title', 'company', 'location']
@@ -64,7 +67,7 @@ class JobCompatibilityComponent:
                 format_func=lambda i: f"{display_df.iloc[i]['title']} at {display_df.iloc[i]['company']}"
             )
             
-            selected_job = job_search_results[selected_job_index]
+            selected_job = df.iloc[selected_job_index].to_dict() if isinstance(df, pd.DataFrame) else job_search_results[selected_job_index]
             
             if st.button("Calculate Compatibility Score"):
                 with st.spinner("Calculating job compatibility score..."):
@@ -138,6 +141,12 @@ class JobCompatibilityComponent:
         
         # Display overall score
         overall_score = compatibility_results.get("overall_score", 0)
+        if isinstance(overall_score, str) and "%" in overall_score:
+            try:
+                overall_score = int(overall_score.rstrip("%"))
+            except ValueError:
+                overall_score = 0
+        
         st.metric("Overall Match Score", f"{overall_score}%")
         
         # Create columns for detailed scores
@@ -145,14 +154,29 @@ class JobCompatibilityComponent:
         
         with col1:
             skills_score = compatibility_results.get("skills_match", {}).get("score", 0)
+            if isinstance(skills_score, str) and "%" in skills_score:
+                try:
+                    skills_score = int(skills_score.rstrip("%"))
+                except ValueError:
+                    skills_score = 0
             st.metric("Skills Match", f"{skills_score}%")
             
         with col2:
             experience_score = compatibility_results.get("experience_match", {}).get("score", 0)
+            if isinstance(experience_score, str) and "%" in experience_score:
+                try:
+                    experience_score = int(experience_score.rstrip("%"))
+                except ValueError:
+                    experience_score = 0
             st.metric("Experience Match", f"{experience_score}%")
             
         with col3:
             education_score = compatibility_results.get("education_match", {}).get("score", 0)
+            if isinstance(education_score, str) and "%" in education_score:
+                try:
+                    education_score = int(education_score.rstrip("%"))
+                except ValueError:
+                    education_score = 0
             st.metric("Education Match", f"{education_score}%")
         
         # Display missing skills
