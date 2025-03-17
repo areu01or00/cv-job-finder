@@ -24,6 +24,12 @@ def main():
         initial_sidebar_state="expanded"
     )
     
+    # Initialize session state if needed
+    if "cv_analysis_results" not in st.session_state:
+        st.session_state.cv_analysis_results = None
+    if "job_search_results" not in st.session_state:
+        st.session_state.job_search_results = None
+    
     # Custom CSS
     st.markdown("""
     <style>
@@ -98,6 +104,7 @@ def main():
         if cv_analysis_results:
             # Store CV analysis results in session state
             st.session_state.cv_analysis_results = cv_analysis_results
+            st.success("CV analysis complete! You can now proceed to other tabs.")
     
     # Job Search tab
     with tab2:
@@ -106,6 +113,7 @@ def main():
         if job_search_results:
             # Store job search results in session state
             st.session_state.job_search_results = job_search_results
+            st.success("Job search complete! You can now optimize your CV or calculate job compatibility.")
     
     # CV Optimization tab
     with tab3:
