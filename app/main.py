@@ -91,7 +91,7 @@ def main():
     job_compatibility = JobCompatibilityComponent()
     
     # Create tabs
-    tab1, tab2, tab3, tab4 = st.tabs([
+    tabs = st.tabs([
         "📄 CV Analysis", 
         "🔍 Job Search", 
         "✨ CV Optimization", 
@@ -99,7 +99,7 @@ def main():
     ])
     
     # CV Analysis tab
-    with tab1:
+    with tabs[0]:
         cv_analysis_results = cv_analyzer.render()
         if cv_analysis_results:
             # Store CV analysis results in session state
@@ -107,21 +107,21 @@ def main():
             st.success("CV analysis complete! You can now proceed to other tabs.")
     
     # Job Search tab
-    with tab2:
+    with tabs[1]:
         cv_analysis = st.session_state.get('cv_analysis_results', None)
         job_search_results = job_search.render(cv_analysis)
-        if job_search_results:
+        if job_search_results is not None:
             # Store job search results in session state
             st.session_state.job_search_results = job_search_results
             st.success("Job search complete! You can now optimize your CV or calculate job compatibility.")
     
     # CV Optimization tab
-    with tab3:
+    with tabs[2]:
         cv_analysis = st.session_state.get('cv_analysis_results', None)
         cv_optimizer.render(cv_analysis)
     
     # Job Compatibility tab
-    with tab4:
+    with tabs[3]:
         cv_analysis = st.session_state.get('cv_analysis_results', None)
         job_search_results = st.session_state.get('job_search_results', None)
         job_compatibility.render(cv_analysis, job_search_results)
